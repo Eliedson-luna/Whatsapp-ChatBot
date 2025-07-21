@@ -4,7 +4,7 @@ import { Attendant } from "../../../interfaces/iattendant";
 const client: any = BotClient.getInstance().client
 
 export class BaseAttendant implements Attendant {
-    protected numeroAttendant!: any;
+    protected numeroAttendant!: any; // Need to pass the attendant number by a CONFIG or a .env file
     protected customerName: any
     protected userId: string
 
@@ -55,8 +55,8 @@ async function notify(customerName: string, userId: string, number: string) {
         await client.sendMessage(
             number,
             `❗*Novo Atendimento*❗\n\n` +
-            `Cliente: ${name}\n` +
-            `Conversar com o cliente: https://wa.me/${telefone}`
+            `Solicitante: ${name}\n` +
+            `Clique para atender: https://wa.me/${telefone}`
         );
     } catch (error) {
         if (error instanceof Error) {

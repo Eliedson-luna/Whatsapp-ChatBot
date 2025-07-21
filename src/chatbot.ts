@@ -17,11 +17,10 @@ const sessionManager = Session.getInstance();
 client.on('message', async (msg: any) => {
   const isCliente = msg.from.endsWith('@c.us');
   if (isCliente) {
-    
     const userId = msg.from;
     const session = sessionManager.getSession(userId);
 
-    const texto = msg.body.trim().toLowerCase();
+    const text = msg.body.trim().toLowerCase();
 
     // resetar inatividade
     if (session.timeout()) clearTimeout(session.timeout()!);
@@ -38,10 +37,16 @@ client.on('message', async (msg: any) => {
 
     // ─── Modo Espera ───
     if (session.isWaiting()) {
-      if (texto === 'menu') {
+      if (text === 'cancelar') {
         session.notWaiting();
         session.setLastMenu(0);
-      } else {
+      }
+      if (text === 'finalizar') {
+        client.sendMessage(userId, "Finalizando atendimento");
+        sessionManager.deleteSession(userId);
+      }
+      else {
+        client.sendMessage(userId, 'Não era o que procurava? Envie:\n*Cancelar*, para escolher uma nova opção\n*Finalizar*, para finalizar seu atendimento')
         return;
       }
     }
@@ -49,7 +54,7 @@ client.on('message', async (msg: any) => {
     // ─── SAUDAÇÃO / MENU ───
     const saudacaoRegex = /^(menu|oi|olá|ola|opa|oie|bom dia|boa tarde|boa noite|Olá|site|Anúncio|anúncio)$/i;
     const firstName = await getContactName(msg);
-    if (saudacaoRegex.test(texto)) {
+    if (saudacaoRegex.test(text)) {
       // anti‑spam de menu
       if (Date.now() - session.getLastMenu() < session.MENU_COOLDOWN) return;
 
@@ -64,7 +69,7 @@ client.on('message', async (msg: any) => {
       );
       return;
     }
-    await processChoice(firstName, texto, session);
+    await processChoice(firstName, text, session);
 
     console.log(sessionManager.sessions)
   }
