@@ -30,7 +30,7 @@ export class BotClient {
             return client
         } catch (error) {
             if (error instanceof Error) {
-                const erro = JSON.stringify({ Nome: error.name, Mensagem: error.message })
+                const erro = JSON.stringify({Location:'BotClietn.createClient()', Nome: error.name, Mensagem: error.message })
                 console.error(erro)
             } else {
                 console.error("Erro desconhecido ao inicializar client.")

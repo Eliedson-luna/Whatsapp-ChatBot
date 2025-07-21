@@ -5,12 +5,11 @@ export class SessionProperties implements ISessionProperties {
     private lastMenu: number = 0;
     private inactivityTimer: NodeJS.Timeout | null = null;
     private waitingAttendant: boolean = false;
+    private menuActiveStatus = false
+    public INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+    public MENU_COOLDOWN =  60 * 60 * 1000; // 1 hour
 
-    public INACTIVITY_TIMEOUT = 10 * 60 * 1000;
-    public MENU_COOLDOWN = 60 * 60 * 1000;
-
-    constructor(userId: string) { this.userId = userId }
-
+    constructor(userId: string) { this.userId = userId; }
 
     getLastMenu() {
         return this.lastMenu;
@@ -22,6 +21,9 @@ export class SessionProperties implements ISessionProperties {
         return this.waitingAttendant;
     }
 
+    isMenuActive() {
+        return this.menuActiveStatus;
+    }
 
     setLastMenu(menuState: number) {
         try {
@@ -68,6 +70,30 @@ export class SessionProperties implements ISessionProperties {
                 throw new Error(erro)
             } else {
                 throw new Error("Erro desconhecido ao mudar estado de espera.")
+            }
+        }
+    }
+    activateMenu() {
+        try {
+            this.menuActiveStatus = true;
+        } catch (error) {
+            if (error instanceof Error) {
+                const erro = JSON.stringify({ Location: 'sessionProperties.activateMenu()', Nome: error.name, Mensagem: error.message })
+                throw new Error(erro)
+            } else {
+                throw new Error("Erro desconhecido ao ativar menu.")
+            }
+        }
+    }
+    deactivateMenu() {
+        try {
+            this.menuActiveStatus = false;
+        } catch (error) {
+            if (error instanceof Error) {
+                const erro = JSON.stringify({ Location: 'sessionProperties.deactivateMenu()', Nome: error.name, Mensagem: error.message })
+                throw new Error(erro)
+            } else {
+                throw new Error("Erro desconhecido ao desativar menu.")
             }
         }
     }

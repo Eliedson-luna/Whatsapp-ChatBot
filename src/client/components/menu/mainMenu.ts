@@ -1,6 +1,6 @@
 import { SessionProperties } from "../../../models/chatSession/session/sessionProperties";
 import { BotClient } from "../../botclient";
-
+const {startTyping} = require('../../functions/chat/startTyping')
 const { Recepcao } = require("../../../models/attendant/departments/recepcao/recepcao");
 const { Captacao } = require("../../../models/attendant/departments/captacao/captacao");
 const { Cobranca } = require("../../../models/attendant/departments/cobranca/cobranca");
@@ -21,21 +21,21 @@ const optionFilters: { [key: number]: RegExp } = {
   6: /^(6|seis|atendente|adentende|atindente|atendente)$/i
 };
 
-const mainMenu = (customerName: string, lastmenu: number) => {
+function mainMenu(customerName: string, lastmenu: number, processingTime: number) {
   const menu =
-    `Olá, ${customerName}! Bem‑vindo à *Laticínios Sensação de Minas* !
-    \nSelecione uma das opções para falar com o setor desejado:` +
-    `\n1️⃣ ${options[1]} 🐄` +
-    `\n2️⃣ ${options[2]} 💰` +
-    `\n3️⃣ ${options[3]} 📦` +
-    `\n4️⃣ ${options[4]} 🛒` +
-    `\n5️⃣ ${options[5]} 📊` +
+    `${lastmenu ==  processingTime ? `Olá, ${customerName}! Bem‑vindo à *Laticínios Sensação de Minas* !\n` : ''}`
+    + `Para falar com algum setor selecione uma das opções:\n` +
+    `\n1️⃣ ${options[1]}  🚜` +
+    `\n2️⃣ ${options[2]}   💰` +
+    `\n3️⃣ ${options[3]}  📦` +
+    `\n4️⃣ ${options[4]}    🛒` +
+    `\n5️⃣ ${options[5]}  📊` +
     `\n6️⃣ ${options[6]} 🤵🤵‍♀` +
-    `${lastmenu == Date.now() ? '\n\nObs.: Você pode me chamar a qualquer momento digitando "Menu" no chat 😉' : ''}`
+    `${lastmenu == processingTime ? '\n\nObs.: Você pode me chamar a qualquer momento digitando "Menu" no chat 😉' : ''}`
   return menu
 }
 
-async function processChoice(customerName: string, text: string, session: SessionProperties) {
+async function processChoice(customerName: string, text: string, session: SessionProperties, msg: any) {
   let selectedOption: number | null = null;
 
   for (const [key, regex] of Object.entries(optionFilters)) {
@@ -46,18 +46,20 @@ async function processChoice(customerName: string, text: string, session: Sessio
   }
 
   const handlers: Record<number, () => void> = {
-    1: () => new Captacao(customerName, session.userId).sendLink(),
-    2: () => new Cobranca(customerName, session.userId).sendLink(),
-    3: () => new Comercial(customerName, session.userId).sendLink(),
-    4: () => new Compras(customerName, session.userId).sendLink(),
-    5: () => new Financeiro(customerName, session.userId).sendLink(),
-    6: () => new Recepcao(customerName, session.userId).notifyAttendant()
+    1: () => { new Captacao(customerName, session.userId).sendLink(); },
+    2: () => { new Cobranca(customerName, session.userId).sendLink(); },
+    3: () => { new Comercial(customerName, session.userId).sendLink() },
+    4: () => { new Compras(customerName, session.userId).sendLink(); },
+    5: () => { new Financeiro(customerName, session.userId).sendLink(); },
+    6: () => { new Recepcao(customerName, session.userId).notifyAttendant(); }
   }
 
   try {
     const handler = handlers[selectedOption!];
     if (handler) {
+      await startTyping(msg);
       handler();
+      session.deactivateMenu();
       session.waiting();
     } else {
       await client.sendMessage(
@@ -74,7 +76,6 @@ async function processChoice(customerName: string, text: string, session: Sessio
       console.error("Erro desconhecido ao processar escolha do cliente.")
     }
   }
-
 }
 
 module.exports = { mainMenu, processChoice };
