@@ -11,7 +11,7 @@ require('dotenv').config();
 const client: any = BotClient.getInstance().client
 
 const sessionManager = Session.getInstance();
-console.log('Iniciando SessionManager\nSeções existentes:\n', sessionManager.sessions)
+
 // ───── BOT ─────
 client.on('message', async (msg: any) => {
   const isCliente = msg.from.endsWith('@c.us');
@@ -20,6 +20,13 @@ client.on('message', async (msg: any) => {
   const processingTime = Date.now();
   const userId = msg.from;
   const session = sessionManager.getSession(userId);
+
+  if (!session.inService()) {
+    await client.sendMessage(
+      userId,
+      "Olá, Bem vindo à Laticínios Sensação de minas!\n😢 Desculpe, mas não posso te atender agora\nNossos horários de atendimento são:\nde *Segunda* a *Sexta*\nde *07:00* às *11:00* e *14:00* às *17:00*")
+    return
+  }
 
   const text = msg.body.trim().toLowerCase();
 
@@ -61,11 +68,11 @@ client.on('message', async (msg: any) => {
   if (text) {
     // anti‑spam de menu
     if (!(processingTime - session.getLastMenu() < session.MENU_COOLDOWN)) {
-      session.setLastMenu(Date.now());
+      session.setLastMenu(processingTime);
       await startTyping(msg);
       await client.sendMessage(
         userId,
-        mainMenu(firstName, session.getLastMenu(), processingTime)
+        mainMenu(firstName, session.getLastMenu(), session.createdAt)
       );
       session.activateMenu();
       return

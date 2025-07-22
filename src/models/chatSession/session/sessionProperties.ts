@@ -7,7 +7,8 @@ export class SessionProperties implements ISessionProperties {
     private waitingAttendant: boolean = false;
     private menuActiveStatus = false
     public INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
-    public MENU_COOLDOWN =  60 * 60 * 1000; // 1 hour
+    public MENU_COOLDOWN = 60 * 60 * 1000; // 1 hour
+    public createdAt = Date.now();
 
     constructor(userId: string) { this.userId = userId; }
 
@@ -98,6 +99,29 @@ export class SessionProperties implements ISessionProperties {
         }
     }
 
+    inService() {
+        try {
+            const processingDay = new Date().getDay();
+            const processingHour = new Date().getHours();
+            if (
+                (processingHour < 7 || processingHour > 11)
+                && 
+                (processingHour < 14 || processingHour >= 17)
+                ||
+                (processingDay == 0 || processingDay == 6)) {
+                return false
+            } else {
+                return true
+            }
+        } catch (error) {
+            if (error instanceof Error) {
+                const erro = JSON.stringify({ Location: 'sessionProperties.deactivateMenu()', Nome: error.name, Mensagem: error.message })
+                throw new Error(erro)
+            } else {
+                throw new Error("Erro desconhecido ao desativar menu.")
+            }
+        }
+    }
 
 
 }

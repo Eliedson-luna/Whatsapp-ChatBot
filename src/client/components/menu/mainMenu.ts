@@ -1,6 +1,6 @@
 import { SessionProperties } from "../../../models/chatSession/session/sessionProperties";
 import { BotClient } from "../../botclient";
-const {startTyping} = require('../../functions/chat/startTyping')
+const { startTyping } = require('../../functions/chat/startTyping')
 const { Recepcao } = require("../../../models/attendant/departments/recepcao/recepcao");
 const { Captacao } = require("../../../models/attendant/departments/captacao/captacao");
 const { Cobranca } = require("../../../models/attendant/departments/cobranca/cobranca");
@@ -21,17 +21,17 @@ const optionFilters: { [key: number]: RegExp } = {
   6: /^(6|seis|atendente|adentende|atindente|atendente)$/i
 };
 
-function mainMenu(customerName: string, lastmenu: number, processingTime: number) {
+function mainMenu(customerName: string, lastmenu: number, createdAt: number) {
   const menu =
-    `${lastmenu == processingTime ? `Olá, ${customerName}! Bem‑vindo à *Laticínios Sensação de Minas* !\n` : ''}`
+    `${lastmenu == createdAt ? `Olá, ${customerName}! Bem‑vindo à *Laticínios Sensação de Minas* !\n` : ''}`
     + `Para falar com algum setor selecione uma das opções:\n` +
-    `\n1️⃣ ${options[1]}  🚜` +
+    `\n1️⃣ ${options[1]}  🥛` +
     `\n2️⃣ ${options[2]}   💰` +
     `\n3️⃣ ${options[3]}  📦` +
     `\n4️⃣ ${options[4]}    🛒` +
     `\n5️⃣ ${options[5]}  📊` +
     `\n6️⃣ ${options[6]} 🤵🤵‍♀` +
-    `${lastmenu == processingTime ? '\n\nObs.: Você pode me chamar a qualquer momento digitando "Menu" no chat 😉' : ''}`
+    `${lastmenu == createdAt ? '\n\nObs.: Você pode me chamar a qualquer momento digitando "Menu" no chat 😉' : ''}`
   return menu
 }
 
