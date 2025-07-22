@@ -41,17 +41,7 @@ client.on('message', async (msg: any) => {
     if (text === 'menu') {
       session.notWaiting();
       session.setLastMenu(0);
-      session.activateMenu();
-      await startTyping(msg);
-
-      await client.sendMessage(
-        userId,
-        mainMenu(await getContactName(msg), session.getLastMenu(), Date.now())
-      );
-
-      return;
-    }
-    else if (text === 'finalizar') {
+    } else if (text === 'finalizar') {
       await client.sendMessage(userId, "Finalizando atendimento");
       sessionManager.deleteSession(userId);
       return

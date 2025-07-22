@@ -23,7 +23,7 @@ const optionFilters: { [key: number]: RegExp } = {
 
 function mainMenu(customerName: string, lastmenu: number, processingTime: number) {
   const menu =
-    `${lastmenu ==  processingTime ? `Olá, ${customerName}! Bem‑vindo à *Laticínios Sensação de Minas* !\n` : ''}`
+    `${lastmenu == processingTime ? `Olá, ${customerName}! Bem‑vindo à *Laticínios Sensação de Minas* !\n` : ''}`
     + `Para falar com algum setor selecione uma das opções:\n` +
     `\n1️⃣ ${options[1]}  🚜` +
     `\n2️⃣ ${options[2]}   💰` +
