@@ -32,7 +32,7 @@ export class BaseAttendant implements Attendant {
 
     async sendLink() {
         try {
-            await client.sendMessage(this.userId, 'Siga o link para iniciar uma conversa com o atentende.' + `\n\nhttps://wa.me/${this.numeroAttendant.replace('@c.us', '')}`);
+            await client.sendMessage(this.userId, 'Aqui está!\nSiga o link para iniciar uma conversa com um atendente.' + `\n\nhttps://wa.me/${this.numeroAttendant.replace('@c.us', '')}`);
         } catch (error) {
             if (error instanceof Error) {
                 const erro = JSON.stringify({ Location: 'BaseAttendant.sendLink()',ErrorName: error.name, Message: error.message })
@@ -42,21 +42,20 @@ export class BaseAttendant implements Attendant {
             }
         }
     }
-
 }
 
 async function notify(customerName: string, userId: string, number: string) {
     try {
         const name = customerName || 'Cliente sem nome';
 
-        const telefone = userId.replace('@c.us', '');
+        const cellNumber = userId.replace('@c.us', '');
 
         await client.sendMessage(userId, 'Aguarde um istante, um de nossos colaboradores entrará em contato com você.');
         await client.sendMessage(
             number,
             `❗*Novo Atendimento*❗\n\n` +
             `Solicitante: ${name}\n` +
-            `Clique para atender: https://wa.me/${telefone}`
+            `Clique para atender: https://wa.me/${cellNumber}`
         );
     } catch (error) {
         if (error instanceof Error) {
