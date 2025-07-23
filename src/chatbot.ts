@@ -9,14 +9,17 @@ require('dotenv').config();
 
 // ───── CONFIG ─────
 const client: any = BotClient.getInstance().client
-
+const initializedAt = Date.now();
 const sessionManager = Session.getInstance();
 
 // ───── BOT ─────
 client.on('message', async (msg: any) => {
-  const isCliente = msg.from.endsWith('@c.us');
+  const messageTime = msg.timestamp * 1000 // Quando a mensagem foi recebida, em milisegundos
+  const isCliente = msg.from.endsWith('@c.us');                           
   if (!isCliente) return
-
+  
+  if (new Date(messageTime - initializedAt).getMinutes() > 30) { return } // Impede o bot de interagir com pessoas que mandaram 
+                                                                          // mensagens 30 minutos antes de sua inicialização
   const processingTime = Date.now();
   const userId = msg.from;
   const session = sessionManager.getSession(userId);
@@ -24,7 +27,7 @@ client.on('message', async (msg: any) => {
   if (!session.inService()) {
     await client.sendMessage(
       userId,
-      "Olá, Bem vindo à Laticínios Sensação de minas!\n😢 Desculpe, mas não posso te atender agora\nNossos horários de atendimento são:\nde *Segunda* a *Sexta*\nde *07:00* às *11:00* e *14:00* às *17:00*")
+      "Olá, Bem vindo à *Laticínios Sensação de minas*!\n\n😢 Desculpe, mas não posso te atender agora\nNossos horários de atendimento são:\n\nde *Segunda* a *Sexta*\nde *07:00* às *11:00* e *14:00* às *17:00*")
     return
   }
 
@@ -34,36 +37,46 @@ client.on('message', async (msg: any) => {
   if (session.timeout()) clearTimeout(session.timeout()!);
 
   const timer = setTimeout(async () => {
-    await client.sendMessage(
-      userId,
-      '👋 Sem respostas há um tempo, vou encerrar seu atendimento. Qualquer coisa é só dar um alô!!'
-    );
-    sessionManager.deleteSession(userId);
+    if (!session.acceptingClientInteraction()) {
+      await client.sendMessage(
+        userId,
+        'Deseja mais alguma coisa?'
+      );
+      session.setLastMenu(0);
+      session.unblockClient()
+    }
+    else {
+      await client.sendMessage(
+        userId,
+        '👋 Sem respostas há um tempo, vou encerrar seu atendimento. Qualquer coisa é só dar um alô!!'
+      );
+      sessionManager.deleteSession(userId);
+    }
   }, session.INACTIVITY_TIMEOUT);
 
-  session.setTimeout(timer);
-  // ─── Modo Espera ───
+  session.setUserTimeout(timer);
 
-  if (session.isWaiting()) {
+  // ─── Modo Espera ───
+  if (session.isWaitingAttendant()) {
     if (text === 'menu') {
-      session.notWaiting();
+      session.notWaitAttendant();
       session.setLastMenu(0);
+      if (!session.acceptingClientInteraction()) { session.unblockClient() }
     } else if (text === 'finalizar') {
-      await client.sendMessage(userId, "Finalizando atendimento");
+      await client.sendMessage(userId, "👋 Finalizando atendimento\nSensação de Minas agradece seu contato!");
       sessionManager.deleteSession(userId);
       return
     }
     else {
       await client.sendMessage(
         userId,
-        'Não era o que procurava?\nEnvie:\n\n *Menu*, para escolher uma nova opção\n\n *Finalizar*, para finalizar seu atendimento')
+        '🤔 Não era o que procurava?\n\nPara escolher uma nova opção envie: *Menu*\n\nPara finalizar seu atendimento envie: *Finalizar*')
       return;
     }
   }
-
-
+  if (!session.acceptingClientInteraction()) { return }
   // ─── SAUDAÇÃO / MENU ───
-  // const saudacaoRegex = /^(menu|oi|olá|ola|opa|oie|bom dia|boa tarde|boa noite|olá|site|anúncio|anúncio)$/i;
+
   const firstName = await getContactName(msg);
   if (text) {
     // anti‑spam de menu
@@ -74,15 +87,13 @@ client.on('message', async (msg: any) => {
         userId,
         mainMenu(firstName, session.getLastMenu(), session.createdAt)
       );
-      session.activateMenu();
+      session.menuActive();
       return
     }
   }
   if (session.isMenuActive()) {
-    await processChoice(firstName, text, session, msg);
+    await processChoice(session, msg);
   }
   console.log(sessionManager.sessions)
-}
-
-);
+});
 

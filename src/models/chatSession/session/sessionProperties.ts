@@ -1,112 +1,110 @@
 import { ISessionProperties } from "../../../interfaces/isessionProperties";
 
 export class SessionProperties implements ISessionProperties {
-    userId: string;
+    readonly userId: string;
     private lastMenu: number = 0;
     private inactivityTimer: NodeJS.Timeout | null = null;
     private waitingAttendant: boolean = false;
     private menuActiveStatus = false
-    public INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
-    public MENU_COOLDOWN = 60 * 60 * 1000; // 1 hour
-    public createdAt = Date.now();
+    protected acceptClientInteraction = true;
+    readonly INACTIVITY_TIMEOUT = 1 * 60 * 1000; // 10 minutes
+    readonly MENU_COOLDOWN = 60 * 60 * 1000; // 1 hour
+    readonly createdAt = Date.now();
 
     constructor(userId: string) { this.userId = userId; }
 
-    getLastMenu() {
+    getLastMenu(): number {
         return this.lastMenu;
     }
-    timeout() {
+    timeout(): NodeJS.Timeout | null {
         return this.inactivityTimer;
     }
-    isWaiting() {
+    isWaitingAttendant(): boolean {
         return this.waitingAttendant;
     }
-
-    isMenuActive() {
+    isMenuActive(): boolean {
         return this.menuActiveStatus;
     }
-
-    setLastMenu(menuState: number) {
+    setLastMenu(menuState: number): void {
         try {
             this.lastMenu = menuState;
         } catch (error) {
             if (error instanceof Error) {
-                const erro = JSON.stringify({ Nome: error.name, Mensagem: error.message })
+                const erro = JSON.stringify({ Location: 'sessionProperties.setLastMenu()', Nome: error.name, Mensagem: error.message })
                 throw new Error(erro)
             } else {
                 throw new Error("Erro desconhecido ao setar estado do menu.")
             }
         }
     }
-    setTimeout(timeout: NodeJS.Timeout | null) {
+    setUserTimeout(timeout: NodeJS.Timeout | null): void {
         try {
             this.inactivityTimer = timeout;
         } catch (error) {
             if (error instanceof Error) {
-                const erro = JSON.stringify({ Nome: error.name, Mensagem: error.message })
+                const erro = JSON.stringify({ Location: 'sessionProperties.setUserTimeout()', Nome: error.name, Mensagem: error.message })
                 throw new Error(erro)
             } else {
                 throw new Error("Erro desconhecido ao setar timeout de inatividade.")
             }
         }
     }
-    waiting() {
+    waitAttendant(): void {
         try {
             this.waitingAttendant = true;
         } catch (error) {
             if (error instanceof Error) {
-                const erro = JSON.stringify({ Nome: error.name, Mensagem: error.message })
+                const erro = JSON.stringify({ Location: 'sessionProperties.waitAttendant()', Nome: error.name, Mensagem: error.message })
                 throw new Error(erro)
             } else {
                 throw new Error("Erro desconhecido ao mudar estado de espera.")
             }
         }
     }
-    notWaiting() {
+    notWaitAttendant(): void {
         try {
             this.waitingAttendant = false;
         } catch (error) {
             if (error instanceof Error) {
-                const erro = JSON.stringify({ Nome: error.name, Mensagem: error.message })
+                const erro = JSON.stringify({ Location: 'sessionProperties.notWaitAttendant()', Nome: error.name, Mensagem: error.message })
                 throw new Error(erro)
             } else {
                 throw new Error("Erro desconhecido ao mudar estado de espera.")
             }
         }
     }
-    activateMenu() {
+    menuActive(): void {
         try {
             this.menuActiveStatus = true;
         } catch (error) {
             if (error instanceof Error) {
-                const erro = JSON.stringify({ Location: 'sessionProperties.activateMenu()', Nome: error.name, Mensagem: error.message })
+                const erro = JSON.stringify({ Location: 'sessionProperties.menuActive()', Nome: error.name, Mensagem: error.message })
                 throw new Error(erro)
             } else {
                 throw new Error("Erro desconhecido ao ativar menu.")
             }
         }
     }
-    deactivateMenu() {
+    menuDeactive(): void {
         try {
             this.menuActiveStatus = false;
         } catch (error) {
             if (error instanceof Error) {
-                const erro = JSON.stringify({ Location: 'sessionProperties.deactivateMenu()', Nome: error.name, Mensagem: error.message })
+                const erro = JSON.stringify({ Location: 'sessionProperties.menuDeactive()', Nome: error.name, Mensagem: error.message })
                 throw new Error(erro)
             } else {
                 throw new Error("Erro desconhecido ao desativar menu.")
             }
         }
     }
-
-    inService() {
+    inService(): boolean {
         try {
             const processingDay = new Date().getDay();
             const processingHour = new Date().getHours();
             if (
                 (processingHour < 7 || processingHour > 11)
-                && 
-                (processingHour < 14 || processingHour >= 17)
+                &&
+                (processingHour < 13 || processingHour >= 17)
                 ||
                 (processingDay == 0 || processingDay == 6)) {
                 return false
@@ -115,13 +113,47 @@ export class SessionProperties implements ISessionProperties {
             }
         } catch (error) {
             if (error instanceof Error) {
-                const erro = JSON.stringify({ Location: 'sessionProperties.deactivateMenu()', Nome: error.name, Mensagem: error.message })
+                const erro = JSON.stringify({ Location: 'sessionProperties.inService()', Nome: error.name, Mensagem: error.message })
                 throw new Error(erro)
             } else {
                 throw new Error("Erro desconhecido ao desativar menu.")
             }
         }
     }
-
-
+    acceptingClientInteraction(): boolean {
+        try {
+            return this.acceptClientInteraction;
+        } catch (error) {
+            if (error instanceof Error) {
+                const erro = JSON.stringify({ Location: 'sessionProperties.acceptingCLientInteraction()', Nome: error.name, Mensagem: error.message })
+                throw new Error(erro)
+            } else {
+                throw new Error("Erro desconhecido ao consultar se a sessão está bloqueando o client.")
+            }
+        }
+    }
+    blockClient(): void {
+        try {
+            this.acceptClientInteraction = false;
+        } catch (error) {
+            if (error instanceof Error) {
+                const erro = JSON.stringify({ Location: 'sessionProperties.bloqClient()', Nome: error.name, Mensagem: error.message })
+                throw new Error(erro)
+            } else {
+                throw new Error("Erro desconhecido ao bloquear client.")
+            }
+        }
+    }
+    unblockClient(): void {
+        try {
+            this.acceptClientInteraction = true;
+        } catch (error) {
+            if (error instanceof Error) {
+                const erro = JSON.stringify({ Location: 'sessionProperties.unBloqClient()', Nome: error.name, Mensagem: error.message })
+                throw new Error(erro)
+            } else {
+                throw new Error("Erro desconhecido ao bloquear client.")
+            }
+        }
+    }
 }

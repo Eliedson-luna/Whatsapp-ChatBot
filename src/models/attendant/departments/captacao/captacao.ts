@@ -6,5 +6,4 @@ export class Captacao extends BaseAttendant {
     constructor(userMsg: any, userId: any) {
         super(userMsg, userId);
     }
-
 }

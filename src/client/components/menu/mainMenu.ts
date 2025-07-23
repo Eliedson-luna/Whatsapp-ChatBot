@@ -1,3 +1,4 @@
+import { Session } from "../../../models/chatSession/session/session";
 import { SessionProperties } from "../../../models/chatSession/session/sessionProperties";
 import { BotClient } from "../../botclient";
 const { startTyping } = require('../../functions/chat/startTyping')
@@ -7,10 +8,12 @@ const { Cobranca } = require("../../../models/attendant/departments/cobranca/cob
 const { Comercial } = require("../../../models/attendant/departments/comercial/comercial");
 const { Compras } = require("../../../models/attendant/departments/compras/compras");
 const { Financeiro } = require("../../../models/attendant/departments/financeiro/financeiro");
+const { getContactName } = require('../../functions/contact/getContactName')
 
 const client: any = BotClient.getInstance().client;
+const sessionManager = Session.getInstance();
 
-const options = { 1: 'Captação ', 2: 'Cobrança', 3: 'Comercial', 4: 'Compras', 5: 'Financeiro', 6: 'Solicitar recepcionista' }
+const options = { 1: 'Captação ', 2: 'Cobrança', 3: 'Comercial', 4: 'Compras', 5: 'Financeiro', 6: 'Solicitar recepcionista', 7: 'Sair' }
 
 const optionFilters: { [key: number]: RegExp } = {
   1: /^(1|um|primeiro|captacao|captação|capta|captacão|captaçao)$/i,
@@ -18,7 +21,8 @@ const optionFilters: { [key: number]: RegExp } = {
   3: /^(3|tres|três|comercial|vendas|vendedor)$/i,
   4: /^(4|quatro|compras|compra|produto|estoque)$/i,
   5: /^(5|cinco|financeiro|fatura|pagamento|contas)$/i,
-  6: /^(6|seis|atendente|adentende|atindente|atendente)$/i
+  6: /^(6|seis|atendente|adentende|atindente|atendente)$/i,
+  7: /^(7|sair|cancelar|cancel|cancela|finalizar)$/i
 };
 
 function mainMenu(customerName: string, lastmenu: number, createdAt: number) {
@@ -31,12 +35,22 @@ function mainMenu(customerName: string, lastmenu: number, createdAt: number) {
     `\n4️⃣ ${options[4]}    🛒` +
     `\n5️⃣ ${options[5]}  📊` +
     `\n6️⃣ ${options[6]} 🤵🤵‍♀` +
+    `\n7️⃣ ${options[7]} ❌` +
     `${lastmenu == createdAt ? '\n\nObs.: Você pode me chamar a qualquer momento digitando "Menu" no chat 😉' : ''}`
   return menu
 }
 
-async function processChoice(customerName: string, text: string, session: SessionProperties, msg: any) {
+type ProcessChoiceProps = {
+  session: SessionProperties
+  msg: any
+}
+
+async function processChoice({ session, msg }: ProcessChoiceProps) {
   let selectedOption: number | null = null;
+  
+  const customerName = await getContactName(msg);
+  
+  const text = msg.body.trim().toLowerCase();
 
   for (const [key, regex] of Object.entries(optionFilters)) {
     if (regex.test(text)) {
@@ -51,16 +65,26 @@ async function processChoice(customerName: string, text: string, session: Sessio
     3: () => { new Comercial(customerName, session.userId).sendLink() },
     4: () => { new Compras(customerName, session.userId).sendLink(); },
     5: () => { new Financeiro(customerName, session.userId).sendLink(); },
-    6: () => { new Recepcao(customerName, session.userId).notifyAttendant(); }
+    6: () => { new Recepcao(customerName, session.userId).notifyAttendant(); },
+    7: async () => {
+      await client.sendMessage(session.userId, "👋 Finalizando atendimento\nSensação de Minas agradece seu contato!");
+      sessionManager.deleteSession(session.userId);
+    }
   }
 
   try {
     const handler = handlers[selectedOption!];
     if (handler) {
       await startTyping(msg);
+      if (selectedOption == 6) {
+        await handler();
+        session.menuDeactive();
+        session.blockClient()
+        return
+      }
       handler();
-      session.deactivateMenu();
-      session.waiting();
+      session.menuDeactive();
+      session.waitAttendant();
     } else {
       await client.sendMessage(
         session.userId,
