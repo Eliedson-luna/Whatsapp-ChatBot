@@ -85,7 +85,7 @@ client.on('message', async (msg: any) => {
       await startTyping(msg);
       await client.sendMessage(
         userId,
-        mainMenu(firstName, session.getLastMenu(), session.createdAt)
+        mainMenu(firstName, session)
       );
       session.menuActive();
       return

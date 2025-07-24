@@ -25,9 +25,9 @@ const optionFilters: { [key: number]: RegExp } = {
   7: /^(7|sair|cancelar|cancel|cancela|finalizar)$/i
 };
 
-function mainMenu(customerName: string, lastmenu: number, createdAt: number) {
+function mainMenu(customerName: string, session: SessionProperties) {
   const menu =
-    `${lastmenu == createdAt ? `Olá, ${customerName}! Bem‑vindo à *Laticínios Sensação de Minas* !\n` : ''}`
+    `${session.getLastMenu() == session.createdAt ? `Olá, ${customerName}! Bem‑vindo à *Laticínios Sensação de Minas* !\n` : ''}`
     + `Para falar com algum setor selecione uma das opções:\n` +
     `\n1️⃣ ${options[1]}  🥛` +
     `\n2️⃣ ${options[2]}   💰` +
@@ -36,12 +36,13 @@ function mainMenu(customerName: string, lastmenu: number, createdAt: number) {
     `\n5️⃣ ${options[5]}  📊` +
     `\n6️⃣ ${options[6]} 🤵🤵‍♀` +
     `\n7️⃣ ${options[7]} ❌` +
-    `${lastmenu == createdAt ? '\n\nObs.: Você pode me chamar a qualquer momento digitando "Menu" no chat 😉' : ''}`
+    `${session.getLastMenu() == session.createdAt ? '\n\nObs.: Você pode me chamar a qualquer momento digitando "Menu" no chat 😉' : ''}`
   return menu
 }
 
-
+let repeats = 0;
 async function processChoice(session: SessionProperties, msg: any) {
+
   let selectedOption: number | null = null;
 
   const customerName = await getContactName(msg);
@@ -72,16 +73,17 @@ async function processChoice(session: SessionProperties, msg: any) {
     const handler = handlers[selectedOption!];
     if (handler) {
       await startTyping(msg);
-      if (selectedOption == 6) {
-        await handler();
-        session.menuDeactive();
-        session.blockClient()
-        return
-      }
       handler();
       session.menuDeactive();
       session.waitAttendant();
+      repeats = 0
+      if (selectedOption == 6) {
+        session.blockClient();
+      }
     } else {
+      if (repeats == 3) { return }
+      console.log(repeats)
+      repeats += 1
       await client.sendMessage(
         session.userId,
         '🤔 Não entendi.\nPor favor, escolha uma das opções do menu.'
@@ -97,5 +99,6 @@ async function processChoice(session: SessionProperties, msg: any) {
     }
   }
 }
+
 
 module.exports = { mainMenu, processChoice };

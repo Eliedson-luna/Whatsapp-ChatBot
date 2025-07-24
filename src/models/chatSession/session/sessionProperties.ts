@@ -8,7 +8,7 @@ export class SessionProperties implements ISessionProperties {
     private menuActiveStatus = false
     protected acceptClientInteraction = true;
     readonly INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
-    readonly MENU_COOLDOWN = 60 * 60 * 1000; // 1 hour
+    readonly MENU_COOLDOWN = 30 * 60 * 1000; // 30 minutes
     readonly createdAt = Date.now();
 
     constructor(userId: string) { this.userId = userId; }

@@ -32,7 +32,7 @@ export class BaseAttendant implements Attendant {
 
     async sendLink() {
         try {
-            await client.sendMessage(this.userId, 'Aqui está!\nSiga o link para iniciar uma conversa com um atendente.' + `\n\nhttps://wa.me/${this.numeroAttendant.replace('@c.us', '')}`);
+            await client.sendMessage(this.userId, 'Aqui está!\nSiga o link para iniciar uma conversa com o responsável.' + `\n\nhttps://wa.me/${this.numeroAttendant.replace('@c.us', '')}`);
         } catch (error) {
             if (error instanceof Error) {
                 const erro = JSON.stringify({ Location: 'BaseAttendant.sendLink()',ErrorName: error.name, Message: error.message })
