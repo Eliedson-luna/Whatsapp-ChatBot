@@ -18,7 +18,7 @@ client.on('message', async (msg: any) => {
   const isCliente = msg.from.endsWith('@c.us');                           
   if (!isCliente) return
   
-  if (new Date(messageTime - initializedAt).getMinutes() > 30) { return } // Impede o bot de interagir com pessoas que mandaram 
+  if (new Date(messageTime - initializedAt).getMinutes() == 0) { return } // Impede o bot de interagir com pessoas que mandaram 
                                                                           // mensagens 30 minutos antes de sua inicialização
   const processingTime = Date.now();
   const userId = msg.from;

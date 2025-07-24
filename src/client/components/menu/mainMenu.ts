@@ -40,16 +40,12 @@ function mainMenu(customerName: string, lastmenu: number, createdAt: number) {
   return menu
 }
 
-type ProcessChoiceProps = {
-  session: SessionProperties
-  msg: any
-}
 
-async function processChoice({ session, msg }: ProcessChoiceProps) {
+async function processChoice(session: SessionProperties, msg: any) {
   let selectedOption: number | null = null;
-  
+
   const customerName = await getContactName(msg);
-  
+
   const text = msg.body.trim().toLowerCase();
 
   for (const [key, regex] of Object.entries(optionFilters)) {

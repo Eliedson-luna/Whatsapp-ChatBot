@@ -7,7 +7,7 @@ export class SessionProperties implements ISessionProperties {
     private waitingAttendant: boolean = false;
     private menuActiveStatus = false
     protected acceptClientInteraction = true;
-    readonly INACTIVITY_TIMEOUT = 1 * 60 * 1000; // 10 minutes
+    readonly INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
     readonly MENU_COOLDOWN = 60 * 60 * 1000; // 1 hour
     readonly createdAt = Date.now();
 
