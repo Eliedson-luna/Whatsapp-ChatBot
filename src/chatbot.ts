@@ -40,7 +40,7 @@ client.on('message', async (msg: any) => {
     if (!session.acceptingClientInteraction()) {
       await client.sendMessage(
         userId,
-        'Deseja mais alguma coisa?'
+        'Retomando atendimento'
       );
       session.setLastMenu(0);
       session.unblockClient()
@@ -58,7 +58,7 @@ client.on('message', async (msg: any) => {
 
   // ─── Modo Espera ───
   if (session.isWaitingAttendant()) {
-    if (!session.acceptingClientInteraction()) { return }
+    if (!session.acceptingClientInteraction()) { session.notWaitAttendant(); return }
     if (text === 'menu') {
       session.notWaitAttendant();
       session.setLastMenu(0);
@@ -71,7 +71,7 @@ client.on('message', async (msg: any) => {
     else {
       await client.sendMessage(
         userId,
-        '🤔 Não era o que procurava?\n\nPara escolher uma nova opção envie: *Menu*\n\nPara finalizar seu atendimento envie: *Finalizar*')
+        'Para escolher uma nova opção envie: *Menu*\n\nPara finalizar seu atendimento envie: *Finalizar*')
       return;
     }
   }

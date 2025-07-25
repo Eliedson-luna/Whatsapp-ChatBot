@@ -50,7 +50,7 @@ async function notify(customerName: string, userId: string, number: string) {
         
         const cellNumber = userId.replace('@c.us', '');
 
-        await client.sendMessage(userId, 'Só um instante, vou chamar o recepcionista para te atender.\n\nCaso ninguém apareça, volto em 10 minutinhos pra te acompanhar, tudo bem?');
+        await client.sendMessage(userId, 'Só um instante, vou chamar o recepcionista para te atender.\n\nCaso ninguém envie mensagem no chat nos próximos 10 minutinhos, eu retorno para acompanhar, tudo bem? 😊');
         await client.sendMessage(
             number,
             `❗*Novo Atendimento*❗\n\n` +
