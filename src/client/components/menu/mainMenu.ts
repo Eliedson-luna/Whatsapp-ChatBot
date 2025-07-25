@@ -62,7 +62,7 @@ async function processChoice(session: SessionProperties, msg: any) {
     3: () => { new Comercial(customerName, session.userId).sendLink() },
     4: () => { new Compras(customerName, session.userId).sendLink(); },
     5: () => { new Financeiro(customerName, session.userId).sendLink(); },
-    6: () => { new Recepcao(customerName, session.userId).notifyAttendant(); },
+    6: () => { new Recepcao(customerName, session.userId).notifyAttendant(); session.blockClient();},
     7: async () => {
       await client.sendMessage(session.userId, "👋 Finalizando atendimento\nSensação de Minas agradece seu contato!");
       sessionManager.deleteSession(session.userId);
@@ -77,9 +77,6 @@ async function processChoice(session: SessionProperties, msg: any) {
       session.menuDeactive();
       session.waitAttendant();
       repeats = 0
-      if (selectedOption == 6) {
-        session.blockClient();
-      }
     } else {
       if (repeats == 3) { return }
       console.log(repeats)

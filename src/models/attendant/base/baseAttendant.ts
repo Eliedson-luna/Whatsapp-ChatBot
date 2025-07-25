@@ -47,7 +47,7 @@ export class BaseAttendant implements Attendant {
 async function notify(customerName: string, userId: string, number: string) {
     try {
         const name = customerName || 'Cliente sem nome';
-
+        
         const cellNumber = userId.replace('@c.us', '');
 
         await client.sendMessage(userId, 'Só um instante, vou chamar o recepcionista para te atender.\n\nCaso ninguém apareça, volto em 10 minutinhos pra te acompanhar, tudo bem?');

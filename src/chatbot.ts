@@ -15,11 +15,11 @@ const sessionManager = Session.getInstance();
 // ───── BOT ─────
 client.on('message', async (msg: any) => {
   const messageTime = msg.timestamp * 1000 // Quando a mensagem foi recebida, em milisegundos
-  const isCliente = msg.from.endsWith('@c.us');                           
+  const isCliente = msg.from.endsWith('@c.us');
   if (!isCliente) return
-  
+
   if (new Date(messageTime - initializedAt).getMinutes() == 0) { return } // Impede o bot de interagir com pessoas que mandaram 
-                                                                          // mensagens 30 minutos antes de sua inicialização
+  // mensagens 30 minutos antes de sua inicialização
   const processingTime = Date.now();
   const userId = msg.from;
   const session = sessionManager.getSession(userId);
@@ -58,6 +58,7 @@ client.on('message', async (msg: any) => {
 
   // ─── Modo Espera ───
   if (session.isWaitingAttendant()) {
+    if (!session.acceptingClientInteraction()) { return }
     if (text === 'menu') {
       session.notWaitAttendant();
       session.setLastMenu(0);
