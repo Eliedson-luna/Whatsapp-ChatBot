@@ -1,4 +1,4 @@
-export interface Attendant {
+export interface IAttendant {
     getNumber(): string
     notifyAttendant(): Promise<void>
 }

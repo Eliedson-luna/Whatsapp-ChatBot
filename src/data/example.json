@@ -1,0 +1,9 @@
+{
+    "Attendants": [
+        {
+            "id": 0,
+            "name": "seller",
+            "number": "[countryCode][number]@c.us"
+        }
+    ]
+}

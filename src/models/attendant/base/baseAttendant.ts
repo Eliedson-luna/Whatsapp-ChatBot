@@ -1,9 +1,10 @@
 import { BotClient } from "../../../client/botclient";
-import { Attendant } from "../../../interfaces/iattendant";
+import { IAttendant } from "../../../interfaces/iattendant";
+import { AppError } from "../../error/appError";
 
 const client: any = BotClient.getInstance().client
 
-export class BaseAttendant implements Attendant {
+export class BaseAttendant implements IAttendant {
     protected numeroAttendant!: any; // Need to pass the attendant number by a CONFIG or a .env file
     protected customerName: any
     protected userId: string
@@ -21,9 +22,11 @@ export class BaseAttendant implements Attendant {
         try {
             await notify(this.customerName, this.userId, this.numeroAttendant)
         } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            }
             if (error instanceof Error) {
-                const erro = JSON.stringify({ Location: 'BaseAttendant.notifyAttendant()',ErrorName: error.name, Message: error.message })
-                throw new Error(erro)
+                throw new AppError('BaseAttendant.notifyAttendant()', error);
             } else {
                 throw new Error("Erro desconhecido ao enviar notificação.")
             }
@@ -35,10 +38,9 @@ export class BaseAttendant implements Attendant {
             await client.sendMessage(this.userId, 'Aqui está!\nSiga o link para iniciar uma conversa com o responsável.' + `\n\nhttps://wa.me/${this.numeroAttendant.replace('@c.us', '')}`);
         } catch (error) {
             if (error instanceof Error) {
-                const erro = JSON.stringify({ Location: 'BaseAttendant.sendLink()',ErrorName: error.name, Message: error.message })
-                console.error(erro)
+                throw new AppError('BaseAttendant.sendLink()', error);
             } else {
-                console.error("Erro desconhecido ao enviar link.")
+                throw new Error("Erro desconhecido ao enviar link.")
             }
         }
     }
@@ -47,7 +49,7 @@ export class BaseAttendant implements Attendant {
 async function notify(customerName: string, userId: string, number: string) {
     try {
         const name = customerName || 'Cliente sem nome';
-        
+
         const cellNumber = userId.replace('@c.us', '');
 
         await client.sendMessage(userId, 'Só um instante, vou chamar o recepcionista para te atender.\n\nCaso ninguém envie mensagem no chat nos próximos 10 minutinhos, eu retorno para acompanhar, tudo bem? 😊');
@@ -59,8 +61,7 @@ async function notify(customerName: string, userId: string, number: string) {
         );
     } catch (error) {
         if (error instanceof Error) {
-            const erro = JSON.stringify({ Nome: error.name, Mensagem: error.message })
-            throw new Error(erro)
+            throw new AppError('BaseAttendant.notify()', error);
         } else {
             throw new Error("Erro desconhecido ao enviar notificação.")
         }
