@@ -18,13 +18,13 @@ client.on('message', async (msg: any) => {
   const isCliente = msg.from.endsWith('@c.us');
   if (!isCliente) return
 
-  if (new Date(messageTime - initializedAt).getMinutes() == 0) { return } // Impede o bot de interagir com pessoas que mandaram 
+  if (messageTime < initializedAt) { return } // Impede o bot de interagir com pessoas que mandaram 
   // mensagens 30 minutos antes de sua inicialização
   const processingTime = Date.now();
   const userId = msg.from;
   const session = sessionManager.getSession(userId);
 
-  if (!session.inService()) {
+  if (session.inService()) {
     await client.sendMessage(
       userId,
       "Olá, Bem vindo à *Laticínios Sensação de minas*!\n\n😢 Desculpe, mas não posso te atender agora\nNossos horários de atendimento são:\n\nde *Segunda* a *Sexta*\nde *07:00* às *11:00* e *14:00* às *17:00*")
@@ -86,7 +86,7 @@ client.on('message', async (msg: any) => {
       await startTyping(msg);
       await client.sendMessage(
         userId,
-        mainMenu(firstName, session)
+        await mainMenu(firstName, session)
       );
       session.menuActive();
       return

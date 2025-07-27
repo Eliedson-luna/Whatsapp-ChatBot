@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('node:fs')
 
 const basePath = path.dirname(process.execPath);
-const storagePath = path.join(basePath, 'storage.json');
+const storagePath = path.join(process.cwd(), 'src', 'data', 'storage.json');
 
 async function loadCfgFile() {
     try {
@@ -37,7 +37,7 @@ export async function allAttendants() {
 export async function totalAttendants() {
     try {
         const data = await loadCfgFile();
-        return data.Attendants.lenght;
+        return data.Attendants.length;
     } catch (error) {
         if (error instanceof AppError) {
             throw error;
@@ -52,13 +52,61 @@ export async function totalAttendants() {
 export async function getAttendant(id: number) {
     try {
         const data = await loadCfgFile();
-        const result = data.Attendant.find((item: any) => item.id === id)
+        const result = data.Attendants.find((item: any) => item.id === id)
         return result
     } catch (error) {
         if (error instanceof AppError) {
             throw error;
         } else if (error instanceof Error) {
+            throw new AppError('Config.cfg.getAttendant()', error);
+        } else {
+            throw new Error("Erro desconhecido ao ler atendente");
+        }
+    }
+}
+
+export async function getCellNumber(id: number) {
+    try {
+        const data = await loadCfgFile();
+        const result = data.Attendants.find((item: any) => item.id === id)
+        return result.number
+    } catch (error) {
+        if (error instanceof AppError) {
+            throw error;
+        } else if (error instanceof Error) {
             throw new AppError('Config.cfg.totalAttendants()', error);
+        } else {
+            throw new Error("Erro desconhecido ao ler atendente");
+        }
+    }
+}
+
+export async function getAttendantName(id: number) {
+    try {
+        const data = await loadCfgFile();
+        const result = data.Attendants.find((item: any) => item.id === id)
+        return result.name
+    } catch (error) {
+        if (error instanceof AppError) {
+            throw error;
+        } else if (error instanceof Error) {
+            throw new AppError('Config.cfg.getAttendantName()', error);
+        } else {
+            throw new Error("Erro desconhecido ao ler atendente");
+        }
+    }
+}
+
+export async function getAttendantMethod(id:number) {
+    try {
+        const data = await loadCfgFile();
+        const result = data.Attendants.find((item: any) => item.id === id)
+        return result.method
+    } catch (error) {
+        if (error instanceof AppError) {
+            throw error;
+        } else if (error instanceof Error) {
+            throw new AppError('Config.cfg.getAttendantMethod()', error);
         } else {
             throw new Error("Erro desconhecido ao ler atendente");
         }

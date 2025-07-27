@@ -4,23 +4,27 @@ import { AppError } from "../../error/appError";
 
 const client: any = BotClient.getInstance().client
 
-export class BaseAttendant implements IAttendant {
-    protected numeroAttendant!: any; // Need to pass the attendant number by a CONFIG or a .env file
+export class Attendant implements IAttendant {
+    protected cellNumber: string;
     protected customerName: any
-    protected userId: string
+    protected userId: string = ''
 
-    constructor(customerName: string, userId: string) {
-        this.customerName = customerName;
-        this.userId = userId
+    constructor(cellNumber: string) {
+        this.cellNumber = cellNumber;
     }
-
+    setCustomerName(custumerName: string) {
+        this.customerName = custumerName
+    }
+    setUserId(id: string) {
+        this.userId = id
+    }
     getNumber() {
-        return this.numeroAttendant;
+        return this.cellNumber;
     }
 
     async notifyAttendant() {
         try {
-            await notify(this.customerName, this.userId, this.numeroAttendant)
+            await notify(this.customerName, this.userId, this.cellNumber)
         } catch (error) {
             if (error instanceof AppError) {
                 throw error;
@@ -35,7 +39,7 @@ export class BaseAttendant implements IAttendant {
 
     async sendLink() {
         try {
-            await client.sendMessage(this.userId, 'Aqui está!\nSiga o link para iniciar uma conversa com o responsável.' + `\n\nhttps://wa.me/${this.numeroAttendant.replace('@c.us', '')}`);
+            await client.sendMessage(this.userId, 'Aqui está!\nSiga o link para iniciar uma conversa com o responsável.' + `\n\nhttps://wa.me/${this.cellNumber.replace('@c.us', '')}`);
         } catch (error) {
             if (error instanceof Error) {
                 throw new AppError('BaseAttendant.sendLink()', error);

@@ -1,99 +1,95 @@
+import { allAttendants } from "../../../config/config";
+import { callAttendant } from "../../../DAO/attendant/attendantDAO";
 import { Session } from "../../../models/chatSession/session/session";
 import { SessionProperties } from "../../../models/chatSession/session/sessionProperties";
 import { BotClient } from "../../botclient";
 const { startTyping } = require('../../functions/chat/startTyping')
-const { Recepcao } = require("../../../models/attendant/departments/recepcao/recepcao");
-const { Captacao } = require("../../../models/attendant/departments/captacao/captacao");
-const { Cobranca } = require("../../../models/attendant/departments/cobranca/cobranca");
-const { Comercial } = require("../../../models/attendant/departments/comercial/comercial");
-const { Compras } = require("../../../models/attendant/departments/compras/compras");
-const { Financeiro } = require("../../../models/attendant/departments/financeiro/financeiro");
-const { getContactName } = require('../../functions/contact/getContactName')
+const { getContactName } = require('../../functions/contact/getContactName');
 
 const client: any = BotClient.getInstance().client;
 const sessionManager = Session.getInstance();
 
-const options = { 1: 'Captação ', 2: 'Cobrança', 3: 'Comercial', 4: 'Compras', 5: 'Financeiro', 6: 'Solicitar recepcionista', 7: 'Sair' }
 
-const optionFilters: { [key: number]: RegExp } = {
-  1: /^(1|um|primeiro|captacao|captação|capta|captacão|captaçao)$/i,
-  2: /^(2|dois|segundo|cobranca|cobrança|cobrar|boleto)$/i,
-  3: /^(3|tres|três|comercial|vendas|vendedor)$/i,
-  4: /^(4|quatro|compras|compra|produto|estoque)$/i,
-  5: /^(5|cinco|financeiro|fatura|pagamento|contas)$/i,
-  6: /^(6|seis|atendente|adentende|atindente|atendente)$/i,
-  7: /^(7|sair|cancelar|cancel|cancela|finalizar)$/i
-};
 
-function mainMenu(customerName: string, session: SessionProperties) {
+async function mainMenu(customerName: string, session: SessionProperties) {
+  const attendants = await allAttendants();
+  const isFirstMenu = session.getLastMenu() === session.createdAt;
+
+  const header = isFirstMenu
+    ? `Olá, ${customerName}! Bem‑vindo à *Laticínios Sensação de Minas* !\n\n`
+    : '';
+
+  const options =
+    attendants.length > 0
+      ? attendants
+        .map((a: any) => `${a.id} - ${a.name}`)
+        .join(`\n`)
+      : 'Nenhum atendente disponível no momento.';
+
+  const footer = isFirstMenu
+    ? '\n\nObs.: Você pode me chamar a qualquer momento digitando "Menu" no chat 😉'
+    : '';
+
   const menu =
-    `${session.getLastMenu() == session.createdAt ? `Olá, ${customerName}! Bem‑vindo à *Laticínios Sensação de Minas* !\n` : ''}`
-    + `Para falar com algum setor selecione uma das opções:\n` +
-    `\n1️⃣ ${options[1]}  🥛` +
-    `\n2️⃣ ${options[2]}   💰` +
-    `\n3️⃣ ${options[3]}  📦` +
-    `\n4️⃣ ${options[4]}    🛒` +
-    `\n5️⃣ ${options[5]}  📊` +
-    `\n6️⃣ ${options[6]} 🤵🤵‍♀` +
-    `\n7️⃣ ${options[7]} ❌` +
-    `${session.getLastMenu() == session.createdAt ? '\n\nObs.: Você pode me chamar a qualquer momento digitando "Menu" no chat 😉' : ''}`
-  return menu
+    `${header}` +
+    `Para falar com algum setor selecione uma das opções:\n` +
+    `${options}` +
+    `${footer}`;
+
+  return menu;
 }
 
 let repeats = 0;
 async function processChoice(session: SessionProperties, msg: any) {
-
-  let selectedOption: number | null = null;
-
   const customerName = await getContactName(msg);
-
   const text = msg.body.trim().toLowerCase();
 
-  for (const [key, regex] of Object.entries(optionFilters)) {
-    if (regex.test(text)) {
-      selectedOption = Number(key);
-      break;
-    }
-  }
+  const attendants = await allAttendants();
+  const matched = attendants.find((att: any) =>
+    att.keywords.some((k: string) => new RegExp(`^${k}$`, 'i').test(text))
+  );
 
-  const handlers: Record<number, () => void> = {
-    1: () => { new Captacao(customerName, session.userId).sendLink(); },
-    2: () => { new Cobranca(customerName, session.userId).sendLink(); },
-    3: () => { new Comercial(customerName, session.userId).sendLink() },
-    4: () => { new Compras(customerName, session.userId).sendLink(); },
-    5: () => { new Financeiro(customerName, session.userId).sendLink(); },
-    6: () => { new Recepcao(customerName, session.userId).notifyAttendant(); session.blockClient();},
-    7: async () => {
-      await client.sendMessage(session.userId, "👋 Finalizando atendimento\nSensação de Minas agradece seu contato!");
-      sessionManager.deleteSession(session.userId);
-    }
+  if (!matched) {
+    if (repeats === 3) return;
+    repeats++;
+    await client.sendMessage(
+      session.userId,
+      '🤔 Não entendi.\nPor favor, escolha uma das opções do menu.'
+    );
+    return;
   }
 
   try {
-    const handler = handlers[selectedOption!];
-    if (handler) {
-      await startTyping(msg);
-      handler();
-      session.menuDeactive();
-      session.waitAttendant();
-      repeats = 0
-    } else {
-      if (repeats == 3) { return }
-      console.log(repeats)
-      repeats += 1
+    await startTyping(msg);
+    session.menuDeactive();
+    session.waitAttendant();
+    repeats = 0;
+
+    if (matched.method === 'exit' || matched.name.toLowerCase() === 'sair') {
       await client.sendMessage(
         session.userId,
-        '🤔 Não entendi.\nPor favor, escolha uma das opções do menu.'
+        "👋 Finalizando atendimento\nSensação de Minas agradece seu contato!"
       );
+      sessionManager.deleteSession(session.userId);
+    } else if (
+      matched.name.toLowerCase() === 'recepcao'
+      ||
+      matched.name.toLowerCase() === 'recepcão'
+      ||
+      matched.name.toLowerCase() === 'recepção'
+      ||
+      matched.name.toLowerCase() === 'recepçao'
+      ||
+      matched.name.toLowerCase() === 'atendente'
+    ) {
+      await callAttendant(matched.id, customerName, session.userId);
+      session.blockClient();
     }
-
+    else {
+      await callAttendant(matched.id, customerName, session.userId);
+    }
   } catch (error) {
-    if (error instanceof Error) {
-      const erro = JSON.stringify({ Nome: error.name, Mensagem: error.message })
-      console.error(erro)
-    } else {
-      console.error("Erro desconhecido ao processar escolha do cliente.")
-    }
+    console.error(error instanceof Error ? error.message : error);
   }
 }
 
