@@ -2,8 +2,12 @@
     "Attendants": [
         {
             "id": 0,
-            "name": "seller",
-            "number": "[countryCode][number]@c.us"
+            "name": "exemple",
+            "number": "cell Number with Country Code@c.us",
+            "method": "sendLink Or notifyAttendant",
+            "keywords": [
+                "Key words to use in menu"
+            ]
         }
     ]
 }
