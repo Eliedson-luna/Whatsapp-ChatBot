@@ -6,17 +6,12 @@ import { BotClient } from "../../botclient";
 const { startTyping } = require('../../functions/chat/startTyping')
 const { getContactName } = require('../../functions/contact/getContactName');
 
-const client: any = BotClient.getInstance().client;
-const sessionManager = Session.getInstance();
-
-
-
 async function mainMenu(customerName: string, session: SessionProperties) {
   const attendants = await allAttendants();
   const isFirstMenu = session.getLastMenu() === session.createdAt;
 
   const header = isFirstMenu
-    ? `Olá, ${customerName}! Bem‑vindo à *Laticínios Sensação de Minas* !\n\n`
+    ? `Olá, ${customerName}!Seja Bem‑vindo à *Laticínios Sensação de Minas*! \nÉ um prazer ter você por aqui!\n\n`
     : '';
 
   const options =
@@ -41,6 +36,8 @@ async function mainMenu(customerName: string, session: SessionProperties) {
 
 let repeats = 0;
 async function processChoice(session: SessionProperties, msg: any) {
+  const sessionManager = Session.getInstance();
+  const client: any = BotClient.getInstance().client;
   const customerName = await getContactName(msg);
   const text = msg.body.trim().toLowerCase();
 
@@ -51,11 +48,11 @@ async function processChoice(session: SessionProperties, msg: any) {
 
   if (!matched) {
     if (repeats === 3) return;
-    repeats++;
     await client.sendMessage(
       session.userId,
       '🤔 Não entendi.\nPor favor, escolha uma das opções do menu.'
     );
+    repeats++;
     return;
   }
 

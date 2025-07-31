@@ -102,9 +102,7 @@ export class SessionProperties implements ISessionProperties {
             const processingDay = new Date().getDay();
             const processingHour = new Date().getHours();
             if (
-                (processingHour < 7 || processingHour > 11)
-                &&
-                (processingHour < 13 || processingHour >= 17)
+                (processingHour < 7 || processingHour >= 17)
                 ||
                 (processingDay == 0 || processingDay == 6)) {
                 return false

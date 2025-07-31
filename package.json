@@ -1,15 +1,16 @@
 {
   "name": "whatsapp-ts-bot",
-  "version": "1.0.0",
+  "version": "1.0",
   "main": "dist/chatbot.js",
   "type": "commonjs",
   "scripts": {
     "build": "tsc",
     "start": "node dist/chatbot.js",
-    "dev": "npx ts-node src/chatbot.ts"
+    "dev": "npx ts-node src/chatbot.ts",
+    "pack": "pkg . --targets node18-win-x64 --output package/SensacaoBot.exe"
   },
   "dependencies": {
-    "dotenv": "^17.2.0",
+    "extract-zip": "^2.0.1",
     "fs": "^0.0.1-security",
     "moment-timezone": "^0.6.0",
     "puppeteer": "^24.15.0",
@@ -25,8 +26,9 @@
   "bin": "dist/chatbot.js",
   "pkg": {
     "scripts": "dist/**/*.js",
-    "assets": [
-      "src/data/storage.json"
-    ]
+    "pkg": {
+      "scripts": "dist/**/*.js",
+      "assets": ["dist/chromium"]
+    }
   }
 }

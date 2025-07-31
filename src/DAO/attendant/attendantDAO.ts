@@ -1,11 +1,11 @@
 import { getAttendantMethod, getCellNumber } from "../../config/config";
-import { Attendant } from "../../models/attendant/base/baseAttendant";
+import { Attendant } from "../../models/attendant/attendant";
 import { AppError } from "../../models/error/appError";
 
 export async function callAttendant(requestedId: number, customerName: string, userId: string) {
     try {
-        const id = await getCellNumber(requestedId);
-        const attendant = new Attendant(id)
+        const attendantNumber = await getCellNumber(requestedId);
+        const attendant = new Attendant(attendantNumber)
         attendant.setCustomerName(customerName);
         attendant.setUserId(userId);
         const attendantMethod = await getAttendantMethod(requestedId);

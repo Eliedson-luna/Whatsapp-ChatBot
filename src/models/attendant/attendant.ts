@@ -1,13 +1,12 @@
-import { BotClient } from "../../../client/botclient";
-import { IAttendant } from "../../../interfaces/iattendant";
-import { AppError } from "../../error/appError";
-
-const client: any = BotClient.getInstance().client
+import { BotClient } from "../../client/botclient";
+import { IAttendant } from "../../interfaces/iattendant";
+import { AppError } from "../error/appError";
 
 export class Attendant implements IAttendant {
     protected cellNumber: string;
     protected customerName: any
     protected userId: string = ''
+    private client = BotClient.getInstance().client;
 
     constructor(cellNumber: string) {
         this.cellNumber = cellNumber;
@@ -24,7 +23,7 @@ export class Attendant implements IAttendant {
 
     async notifyAttendant() {
         try {
-            await notify(this.customerName, this.userId, this.cellNumber)
+            await notify(this.client, this.customerName, this.userId, this.cellNumber)
         } catch (error) {
             if (error instanceof AppError) {
                 throw error;
@@ -39,7 +38,7 @@ export class Attendant implements IAttendant {
 
     async sendLink() {
         try {
-            await client.sendMessage(this.userId, 'Aqui está!\nSiga o link para iniciar uma conversa com o responsável.' + `\n\nhttps://wa.me/${this.cellNumber.replace('@c.us', '')}`);
+            await this.client.sendMessage(this.userId, 'Aqui está!\nSiga o link para iniciar uma conversa com o responsável.' + `\n\nhttps://wa.me/${this.cellNumber.replace('@c.us', '')}`);
         } catch (error) {
             if (error instanceof Error) {
                 throw new AppError('BaseAttendant.sendLink()', error);
@@ -50,7 +49,7 @@ export class Attendant implements IAttendant {
     }
 }
 
-async function notify(customerName: string, userId: string, number: string) {
+async function notify(client: any, customerName: string, userId: string, number: string) {
     try {
         const name = customerName || 'Cliente sem nome';
 
